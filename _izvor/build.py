@@ -107,17 +107,78 @@ def e(s):
     return html.escape(s, quote=True)
 
 
+LANG = "sl"
+
+PATHS = {
+    "": "en", "o-nas": "en/about", "storitve": "en/services", "projekti": "en/projects", "kontakt": "en/contact",
+    "pravilnik-o-zasebnosti-2": "en/privacy-policy", "pogoji-poslovanja": "en/terms",
+    "storitve-jeklene-konstrukcije": "en/steel-structures", "industrijska-montaza": "en/industrial-installation",
+    "storitve-varjenje-cevovodov": "en/pipe-welding", "remonti-in-popravila": "en/maintenance-and-repairs",
+    "prefabrikacija-cevovodov": "en/pipe-prefabrication", "nedestruktivno-testiranje-ndt": "en/ndt-inspection",
+}
+
+
+def path_for(key, lang):
+    return key if lang == "sl" else PATHS[key]
+
+
+U = {
+    "sl": dict(skip="Preskoči na vsebino", home_aria="ARC METAL, domača stran", menu="Meni", nav_aria="Glavni meni",
+               about="O nas", services="Storitve", projects="Projekti", contact="Kontakt", home="Domov", crumbs="Drobtinice",
+               contact_us="Kontaktirajte nas", direct="Neposredno", details="Podrobnosti →",
+               cta_t="Pošljite dokumentacijo ali opis projekta.",
+               cta_x="Pripravimo ponudbo glede na obseg, materiale, zahtevane standarde in rok izvedbe.",
+               p_t="Mreža partnerjev in podizvajalcev",
+               p_x="Če vas zanima dolgoročno sodelovanje ali podizvajalsko partnerstvo, nam pustite e-poštni naslov.",
+               p_lbl="E-poštni naslov", p_ph="ime@podjetje.si", p_btn="Pošlji",
+               f_about="Industrijsko varjenje, montaža, remonti in kontrola zvarov. V delavnici ali na terenu, za naročnike v Sloveniji in tujini.",
+               f_std="Varilci certificirani po ISO 9606-1", f_company="Podjetje", f_reg="Matična št.", f_vat="ID za DDV",
+               copy="© 2026 ARC METAL. Vse pravice pridržane.", privacy="Pravilnik o zasebnosti", terms="Pogoji poslovanja",
+               addr2="Zgornje Hoče 7, 2311 Hoče, Slovenija", title_home="ARC METAL | Industrijsko varjenje, montaža in remonti",
+               std_note="Certifikate varilcev, navodila WPS in poročila o kontroli predložimo skladno z zahtevami projekta. Oznake postopkov so navedene po ISO 4063.",
+               key_data="Ključni podatki", other_svc="Ostale storitve", other_svc_t="Kaj še izvajamo",
+               legal_desc="{} spletne strani ARC METAL.", other_lang="EN", other_lang_label="English"),
+    "en": dict(skip="Skip to content", home_aria="ARC METAL, home page", menu="Menu", nav_aria="Main menu",
+               about="About", services="Services", projects="Projects", contact="Contact", home="Home", crumbs="Breadcrumb",
+               contact_us="Contact us", direct="Direct", details="Details →",
+               cta_t="Send us your drawings or a project description.",
+               cta_x="We prepare a quotation based on scope, materials, required standards and delivery date.",
+               p_t="Partner and subcontractor network",
+               p_x="If you are interested in long-term cooperation or subcontracting, leave us your e-mail address.",
+               p_lbl="E-mail address", p_ph="name@company.com", p_btn="Send",
+               f_about="Industrial welding, installation, maintenance and weld inspection. In our workshop or on site, for clients in Slovenia and abroad.",
+               f_std="Welders certified to ISO 9606-1", f_company="Company", f_reg="Reg. No.", f_vat="VAT ID",
+               copy="© 2026 ARC METAL. All rights reserved.", privacy="Privacy policy", terms="Terms of business",
+               addr2="Zgornje Hoče 7, 2311 Hoče, Slovenia", title_home="ARC METAL | Industrial welding, installation and maintenance",
+               std_note="Welder certificates, WPS documents and inspection reports are provided as required by the project. Process numbers are given according to ISO 4063.",
+               key_data="Key data", other_svc="Other services", other_svc_t="What else we do",
+               legal_desc="{} of the ARC METAL website.", other_lang="SL", other_lang_label="Slovenščina"),
+}
+
+
+def u(k):
+    return U[LANG][k]
+
+
 class Page:
-    def __init__(self, slug):
-        self.slug = slug
+    def __init__(self, key):
+        self.key = key
+        self.lang = LANG
+        self.slug = path_for(key, LANG)
 
     def root(self):
-        return "../" if self.slug else ""
+        return "../" * (self.slug.count("/") + 1) if self.slug else ""
 
-    def link(self, slug):
+    def _href(self, slug):
         if MODE == "preview":
             return f"{self.root()}{slug + '/' if slug else ''}index.html"
         return f"{self.root()}{slug + '/' if slug else ''}" or "./"
+
+    def link(self, key):
+        return self._href(path_for(key, self.lang))
+
+    def alt_link(self):
+        return self._href(path_for(self.key, "en" if self.lang == "sl" else "sl"))
 
 
 def facts(rows, title=None):
@@ -132,38 +193,40 @@ def header(p, current):
     def cur(s):
         return ' aria-current="page"' if s == current else ""
     dd = "".join(f'<a href="{p.link(s)}">{e(n)}</a>' for s, n, _ in SERVICES)
-    return f'''<a class="skip" href="#main">Preskoči na vsebino</a>
+    return f'''<a class="skip" href="#main">{u('skip')}</a>
 <header class="site-header"><div class="wrap">
-  <a class="brand" href="{p.link('')}" aria-label="ARC METAL, domača stran">{MARK}</a>
-  <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav">Meni</button>
-  <nav class="nav" id="nav" aria-label="Glavni meni">
-    <a href="{p.link('o-nas')}"{cur('o-nas')}>O nas</a>
-    <div class="dd"><a href="{p.link('storitve')}"{cur('storitve')}>Storitve</a><div class="dd-menu">{dd}</div></div>
-    <a href="{p.link('projekti')}"{cur('projekti')}>Projekti</a>
-    <a href="{p.link('kontakt')}"{cur('kontakt')}>Kontakt</a>
+  <a class="brand" href="{p.link('')}" aria-label="{u('home_aria')}">{MARK}</a>
+  <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav">{u('menu')}</button>
+  <nav class="nav" id="nav" aria-label="{u('nav_aria')}">
+    <a href="{p.link('o-nas')}"{cur('o-nas')}>{u('about')}</a>
+    <div class="dd"><a href="{p.link('storitve')}"{cur('storitve')}>{u('services')}</a><div class="dd-menu">{dd}</div></div>
+    <a href="{p.link('projekti')}"{cur('projekti')}>{u('projects')}</a>
+    <a href="{p.link('kontakt')}"{cur('kontakt')}>{u('contact')}</a>
     <a class="nav-tel" href="{PHONE_HREF}">{PHONE}</a>
+    <a class="nav-lang" href="{p.alt_link()}" hreflang="{'en' if p.lang == 'sl' else 'sl'}" title="{u('other_lang_label')}">{u('other_lang')}</a>
   </nav>
 </div></header>'''
 
 
 def partner_block():
-    return '''<div class="partner"><div class="wrap">
-  <div style="display:grid;gap:8px"><h2>Mreža partnerjev in podizvajalcev</h2>
-  <p class="muted">Če vas zanima dolgoročno sodelovanje ali podizvajalsko partnerstvo, nam pustite e-poštni naslov.</p></div>
+    return f'''<div class="partner"><div class="wrap">
+  <div style="display:grid;gap:8px"><h2>{u('p_t')}</h2>
+  <p class="muted">{u('p_x')}</p></div>
   <div><form class="js-partner" novalidate>
-    <label for="partner-email" class="skip">E-poštni naslov</label>
-    <input id="partner-email" type="email" name="email" placeholder="ime@podjetje.si" autocomplete="email" required>
-    <button class="btn btn-line" type="submit">Pošlji</button></form>
+    <label for="partner-email" class="skip">{u('p_lbl')}</label>
+    <input id="partner-email" type="email" name="email" placeholder="{u('p_ph')}" autocomplete="email" required>
+    <button class="btn btn-line" type="submit">{u('p_btn')}</button></form>
   <p class="form-note" aria-live="polite"></p></div>
 </div></div>'''
 
 
-def cta(p, title="Pošljite dokumentacijo ali opis projekta.",
-        text="Pripravimo ponudbo glede na obseg, materiale, zahtevane standarde in rok izvedbe."):
+def cta(p, title=None, text=None):
+    title = title or u('cta_t')
+    text = text or u('cta_x')
     return f'''<section class="cta"><div class="wrap">
   <div style="display:grid;gap:18px"><h2>{e(title)}</h2><p style="max-width:56ch">{e(text)}</p>
-  <div class="btn-row" style="margin-top:8px"><a class="btn btn-white" href="{p.link('kontakt')}">Kontaktirajte nas</a></div></div>
-  <div class="contact-lines"><span class="label" style="color:#8d9298">Neposredno</span>
+  <div class="btn-row" style="margin-top:8px"><a class="btn btn-white" href="{p.link('kontakt')}">{u('contact_us')}</a></div></div>
+  <div class="contact-lines"><span class="label" style="color:#8d9298">{u('direct')}</span>
   <a href="{PHONE_HREF}">{PHONE}</a><a href="mailto:{EMAIL}">{EMAIL}</a></div>
 </div></section>'''
 
@@ -173,28 +236,32 @@ def footer(p):
     return f'''<footer class="site-footer"><div class="wrap">
   <div class="foot-grid">
     <div class="foot-about"><a class="brand" href="{p.link('')}" aria-label="ARC METAL">{MARK}</a>
-      <p>Industrijsko varjenje, montaža, remonti in kontrola zvarov. V delavnici ali na terenu, za naročnike v Sloveniji in tujini.</p>
-      <p class="foot-std">Varilci certificirani po ISO 9606-1</p></div>
-    <div><h4>Podjetje</h4><ul><li><a href="{p.link('o-nas')}">O nas</a></li><li><a href="{p.link('storitve')}">Storitve</a></li>
-      <li><a href="{p.link('projekti')}">Projekti</a></li><li><a href="{p.link('kontakt')}">Kontakt</a></li></ul></div>
-    <div><h4>Storitve</h4><ul>{svcs}</ul></div>
-    <div><h4>Kontakt</h4><ul><li><a href="{PHONE_HREF}">{PHONE}</a></li><li><a href="mailto:{EMAIL}">{EMAIL}</a></li>
-      <li>{e(ADDR1)}<br>{e(ADDR2)}</li><li>Matična št.: {MAT}<br>ID za DDV: {DDV}</li></ul></div>
+      <p>{u('f_about')}</p>
+      <p class="foot-std">{u('f_std')}</p></div>
+    <div><h4>{u('f_company')}</h4><ul><li><a href="{p.link('o-nas')}">{u('about')}</a></li><li><a href="{p.link('storitve')}">{u('services')}</a></li>
+      <li><a href="{p.link('projekti')}">{u('projects')}</a></li><li><a href="{p.link('kontakt')}">{u('contact')}</a></li></ul></div>
+    <div><h4>{u('services')}</h4><ul>{svcs}</ul></div>
+    <div><h4>{u('contact')}</h4><ul><li><a href="{PHONE_HREF}">{PHONE}</a></li><li><a href="mailto:{EMAIL}">{EMAIL}</a></li>
+      <li>{e(ADDR1)}<br>{e(u('addr2'))}</li><li>{u('f_reg')}: {MAT}<br>{u('f_vat')}: {DDV}</li></ul></div>
   </div>
-  <div class="foot-bottom"><span>© 2026 ARC METAL. Vse pravice pridržane.</span>
-    <span class="links"><a href="{p.link('pravilnik-o-zasebnosti-2')}">Pravilnik o zasebnosti</a><a href="{p.link('pogoji-poslovanja')}">Pogoji poslovanja</a></span></div>
+  <div class="foot-bottom"><span>{u('copy')}</span>
+    <span class="links"><a href="{p.link('pravilnik-o-zasebnosti-2')}">{u('privacy')}</a><a href="{p.link('pogoji-poslovanja')}">{u('terms')}</a></span></div>
 </div></footer>'''
 
 
 def layout(p, title, desc, body, current):
-    full = "ARC METAL | Industrijsko varjenje, montaža in remonti" if title is None else f"{title} | ARC METAL"
+    full = u('title_home') if title is None else f"{title} | ARC METAL"
+    sl_href = "https://arcmetal.si/" + (p.key + "/" if p.key else "")
+    en_href = "https://arcmetal.si/" + PATHS[p.key] + "/"
     return f'''<!DOCTYPE html>
-<html lang="sl">
+<html lang="{p.lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(full)}</title>
 <meta name="description" content="{e(desc)}">
+<link rel="alternate" hreflang="sl" href="{sl_href}">
+<link rel="alternate" hreflang="en" href="{en_href}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
@@ -205,7 +272,7 @@ def layout(p, title, desc, body, current):
 <main id="main">
 {body}
 </main>
-{partner_block() if p.slug == "o-nas" else ""}
+{partner_block() if p.key == "o-nas" else ""}
 {footer(p)}
 <script src="{p.root()}main.js"></script>
 </body>
@@ -214,13 +281,13 @@ def layout(p, title, desc, body, current):
 
 
 def page_head(p, crumbs, h1, lead=None):
-    c = [f'<a href="{p.link("")}">Domov</a>']
+    c = [f'<a href="{p.link("")}">{u("home")}</a>']
     for label, slug in crumbs:
         c.append('<span aria-hidden="true">/</span>')
         c.append(f'<a href="{p.link(slug)}">{e(label)}</a>' if slug is not None else f'<span aria-current="page">{e(label)}</span>')
     ld = f'<p class="lead">{e(lead)}</p>' if lead else ""
     return f'''<div class="page-head"><div class="wrap">
-  <nav class="crumbs" aria-label="Drobtinice">{"".join(c)}</nav><h1>{e(h1)}</h1>{ld}
+  <nav class="crumbs" aria-label="{u('crumbs')}">{"".join(c)}</nav><h1>{e(h1)}</h1>{ld}
 </div></div>'''
 
 
@@ -234,14 +301,14 @@ def svc_list(p, exclude=None):
     for i, (s, n, d) in enumerate(SERVICES):
         if s == exclude:
             continue
-        rows.append(f'<a class="svc-row" href="{p.link(s)}"><span class="n">{i+1:02d}</span><h3>{e(n)}</h3><p>{e(d)}</p><span class="go">Podrobnosti →</span></a>')
+        rows.append(f'<a class="svc-row" href="{p.link(s)}"><span class="n">{i+1:02d}</span><h3>{e(n)}</h3><p>{e(d)}</p><span class="go">{u('details')}</span></a>')
     return f'<div class="svc-list">{"".join(rows)}</div>'
 
 
 def std_block():
     items = "".join(f'<div class="std"><span class="num">{e(c)}</span><span class="name">{e(n)}</span><p>{e(d)}</p></div>'
                     for c, n, d in STANDARDS)
-    return f'<div class="std-grid">{items}</div><p class="std-note">Certifikate varilcev, navodila WPS in poročila o kontroli predložimo skladno z zahtevami projekta. Oznake postopkov so navedene po ISO 4063.</p>'
+    return f'<div class="std-grid">{items}</div><p class="std-note">{u("std_note")}</p>'
 
 
 def steps(items):
@@ -380,14 +447,14 @@ def service_page(slug):
     d = SVC_PAGES[slug]
     p = Page(slug)
     ov = "".join(f"<p>{e(x)}</p>" for x in d["ov"])
-    body = f'''{page_head(p, [("Storitve", "storitve"), (SVC_NAME[slug], None)], d["h1"], d["lead"])}
+    body = f'''{page_head(p, [(u("services"), "storitve"), (SVC_NAME[slug], None)], d["h1"], d["lead"])}
 <section><div class="wrap cols wide-left">
   <div style="display:grid;gap:22px;align-content:start"><h2>{e(d["ov_title"])}</h2><div class="prose">{ov}</div>
-  <div class="btn-row" style="margin-top:6px"><a class="btn btn-dark" href="{p.link('kontakt')}">Kontaktirajte nas</a></div></div>
-  {facts(SVC_FACTS[slug], "Ključni podatki")}
+  <div class="btn-row" style="margin-top:6px"><a class="btn btn-dark" href="{p.link('kontakt')}">{u('contact_us')}</a></div></div>
+  {facts(SVC_FACTS[slug], u("key_data"))}
 </div></section>
 <section class="alt"><div class="wrap">{sec_head(d["list_label"], d["list_title"])}{steps(d["items"])}</div></section>
-<section><div class="wrap">{sec_head("Ostale storitve", "Kaj še izvajamo")}{svc_list(p, exclude=slug)}</div></section>
+<section><div class="wrap">{sec_head(u("other_svc"), u("other_svc_t"))}{svc_list(p, exclude=slug)}</div></section>
 {cta(p)}'''
     return p, layout(p, d["h1"], d["lead"], body, "storitve")
 
@@ -419,7 +486,7 @@ def legal(slug, title, sections):
     secs = "".join(f"<section><h2>{e(h)}</h2>{c}</section>" for h, c in sections)
     body = f'''{page_head(p, [(title, None)], title)}
 <section><div class="wrap"><div class="legal">{secs}</div></div></section>'''
-    return p, layout(p, title, f"{title} spletne strani ARC METAL.", body, "")
+    return p, layout(p, title, u("legal_desc").format(title), body, "")
 
 
 COMPANY = f"<p>{e(ADDR1)}, {e(ADDR2)}<br>Matična številka: {MAT} · ID za DDV: {DDV}<br>Telefon: {PHONE} · E-pošta: {EMAIL}</p>"
@@ -535,12 +602,23 @@ def pogoji():
 
 
 
+def build_pages():
+    pages = [home(), o_nas(), storitve(), projekti(), kontakt(), zasebnost(), pogoji()]
+    pages += [service_page(s) for s, *_ in SERVICES]
+    return pages
+
+
 def main():
+    global LANG
     out = os.path.join(HERE, OUT)
     shutil.rmtree(out, ignore_errors=True)
     os.makedirs(out)
-    pages = [home(), o_nas(), storitve(), projekti(), kontakt(), zasebnost(), pogoji()]
-    pages += [service_page(s) for s, *_ in SERVICES]
+    LANG = "sl"
+    pages = build_pages()
+    LANG = "en"
+    import content_en
+    globals().update(content_en.load(globals()))
+    pages += build_pages()
     for p, content in pages:
         d = os.path.join(out, p.slug) if p.slug else out
         os.makedirs(d, exist_ok=True)

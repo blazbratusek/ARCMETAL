@@ -1,5 +1,6 @@
 (function () {
   var EMAIL = "info@arcmetal.si";
+  var EN = document.documentElement.lang === "en";
 
   var toggle = document.getElementById("menu-toggle");
   var nav = document.getElementById("nav");
@@ -7,7 +8,7 @@
     toggle.addEventListener("click", function () {
       var open = nav.classList.toggle("open");
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      toggle.textContent = open ? "Zapri" : "Meni";
+      toggle.textContent = open ? (EN ? "Close" : "Zapri") : (EN ? "Menu" : "Meni");
     });
   }
 
@@ -39,11 +40,11 @@
       var note = form.parentNode.querySelector(".form-note");
       var input = form.querySelector("input[type=email]");
       if (!input.checkValidity() || !input.value) {
-        note.textContent = "Vpišite veljaven e-poštni naslov.";
+        note.textContent = EN ? "Please enter a valid e-mail address." : "Vpišite veljaven e-poštni naslov.";
         return;
       }
-      openMail("Mreža partnerjev", "Zanima nas sodelovanje z ARC METAL.\nE-pošta: " + input.value);
-      note.textContent = "Odpira se vaš e-poštni program. Lahko nam pišete tudi na " + EMAIL + ".";
+      openMail(EN ? "Partner network" : "Mreža partnerjev", (EN ? "We are interested in cooperating with ARC METAL.\nE-mail: " : "Zanima nas sodelovanje z ARC METAL.\nE-pošta: ") + input.value);
+      note.textContent = (EN ? "Your e-mail program is opening. You can also write to " : "Odpira se vaš e-poštni program. Lahko nam pišete tudi na ") + EMAIL + ".";
     });
   });
 })();
