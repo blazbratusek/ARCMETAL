@@ -260,6 +260,10 @@ def layout(p, title, desc, body, current):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(full)}</title>
 <meta name="description" content="{e(desc)}">
+<link rel="icon" href="{p.root()}favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{p.root()}favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="{p.root()}apple-touch-icon.png">
+<link rel="canonical" href="{sl_href if p.lang == 'sl' else en_href}">
 <link rel="alternate" hreflang="sl" href="{sl_href}">
 <link rel="alternate" hreflang="en" href="{en_href}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -624,8 +628,22 @@ def main():
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as f:
             f.write(content)
-    for name in ("style.css", "main.js"):
+    for name in ("style.css", "main.js", "favicon.svg", "favicon-32.png", "favicon.ico", "apple-touch-icon.png"):
         shutil.copy(os.path.join(HERE, "src", name), os.path.join(out, name))
+    if MODE == "site":
+        import datetime
+        today = datetime.date.today().isoformat()
+        urls = []
+        for key in PATHS:
+            sl = "https://arcmetal.si/" + (key + "/" if key else "")
+            en = "https://arcmetal.si/" + PATHS[key] + "/"
+            alt = f'<xhtml:link rel="alternate" hreflang="sl" href="{sl}"/><xhtml:link rel="alternate" hreflang="en" href="{en}"/>'
+            for loc in (sl, en):
+                urls.append(f"<url><loc>{loc}</loc><lastmod>{today}</lastmod>{alt}</url>")
+        with open(os.path.join(out, "sitemap.xml"), "w", encoding="utf-8") as f:
+            f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + "\n".join(urls) + "\n</urlset>\n")
+        with open(os.path.join(out, "robots.txt"), "w") as f:
+            f.write("User-agent: *\nAllow: /\n\nSitemap: https://arcmetal.si/sitemap.xml\n")
     print(f"{len(pages)} strani -> {out}")
 
 
