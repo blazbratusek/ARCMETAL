@@ -177,8 +177,8 @@ def load(g):
         body = f'''
 <div class="intro"><div class="wrap intro-grid">
   <div class="intro-copy">
-    <span class="label">Industrial welding and installation · Slovenia</span>
-    <h1>Welding, installation and maintenance for industrial clients.</h1>
+    <span class="label">Welding · Installation · Maintenance · NDT</span>
+    <h1>Industrial welding and installation</h1>
     <p class="lead">We fabricate and install steel structures and piping, carry out maintenance shutdowns and weld inspection. To technical documentation, in our workshop or at your site.</p>
     <div class="btn-row"><a class="btn btn-dark" href="{p.link('kontakt')}">Contact us</a>
     <a class="btn btn-line" href="{p.link('storitve')}">Our services</a></div>
@@ -207,15 +207,10 @@ def load(g):
 </div></section>
 
 <section class="alt"><div class="wrap cols">
-  <div style="display:grid;gap:18px;align-content:start"><span class="label">Industries</span><h2>Who we work for</h2>
-  <p class="muted" style="max-width:52ch">Industrial clients and contractors who need a reliable partner for welding, installation and maintenance.</p></div>
+  <div style="display:grid;gap:18px;align-content:start"><span class="label">Clients</span><h2>Industries we serve</h2>
+  <p class="muted" style="max-width:52ch">We work for manufacturing companies and industrial project contractors who need a reliable partner for welding, installation and maintenance.</p></div>
   <div style="display:grid;gap:28px"><div class="tags">{tags}</div>
   <ul class="checks"><li>Single pieces, small batches and series production</li><li>Work in our workshop or at the client's site</li><li>Projects in Slovenia and abroad</li></ul></div>
-</div></section>
-
-<section><div class="wrap">
-  {sec_head("References", "Selected projects", None, f'<div><a class="textlink" href="{p.link("projekti")}">All projects</a></div>')}
-  {proj_list(PROJECTS[:3])}
 </div></section>
 
 <section class="alt"><div class="wrap cols">
@@ -275,6 +270,9 @@ def load(g):
         return p, layout(p, "Services", "Steel structures, industrial installation, pipe welding, maintenance, pipe prefabrication and NDT. Welders certified to ISO 9606-1.", body, "storitve")
 
     def projekti():
+        return g["redirect_page"]("projekti", "storitve")
+
+    def _projekti_old():
         p = Page("projekti")
         body = f'''{page_head(p, [("Projects", None)], "Projects", "A selection of work in pipe welding, steel structures, installation and maintenance of industrial equipment.")}
 <section><div class="wrap">{proj_list(PROJECTS)}</div></section>

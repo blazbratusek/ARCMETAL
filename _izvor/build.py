@@ -200,7 +200,6 @@ def header(p, current):
   <nav class="nav" id="nav" aria-label="{u('nav_aria')}">
     <a href="{p.link('o-nas')}"{cur('o-nas')}>{u('about')}</a>
     <div class="dd"><a href="{p.link('storitve')}"{cur('storitve')}>{u('services')}</a><div class="dd-menu">{dd}</div></div>
-    <a href="{p.link('projekti')}"{cur('projekti')}>{u('projects')}</a>
     <a href="{p.link('kontakt')}"{cur('kontakt')}>{u('contact')}</a>
     <a class="nav-tel" href="{PHONE_HREF}">{PHONE}</a>
     <a class="nav-lang" href="{p.alt_link()}" hreflang="{'en' if p.lang == 'sl' else 'sl'}" title="{u('other_lang_label')}">{u('other_lang')}</a>
@@ -239,7 +238,7 @@ def footer(p):
       <p>{u('f_about')}</p>
       <p class="foot-std">{u('f_std')}</p></div>
     <div><h4>{u('f_company')}</h4><ul><li><a href="{p.link('o-nas')}">{u('about')}</a></li><li><a href="{p.link('storitve')}">{u('services')}</a></li>
-      <li><a href="{p.link('projekti')}">{u('projects')}</a></li><li><a href="{p.link('kontakt')}">{u('contact')}</a></li></ul></div>
+      <li><a href="{p.link('kontakt')}">{u('contact')}</a></li></ul></div>
     <div><h4>{u('services')}</h4><ul>{svcs}</ul></div>
     <div><h4>{u('contact')}</h4><ul><li><a href="{PHONE_HREF}">{PHONE}</a></li><li><a href="mailto:{EMAIL}">{EMAIL}</a></li>
       <li>{e(ADDR1)}<br>{e(u('addr2'))}</li><li>{u('f_reg')}: {MAT}<br>{u('f_vat')}: {DDV}</li></ul></div>
@@ -347,8 +346,8 @@ def home():
     body = f'''
 <div class="intro"><div class="wrap intro-grid">
   <div class="intro-copy">
-    <span class="label">Industrijsko varjenje in montaža · Slovenija</span>
-    <h1>Varjenje, montaža in remonti za industrijske naročnike.</h1>
+    <span class="label">Varjenje · Montaža · Remonti · NDT</span>
+    <h1>Industrijsko varjenje in montaža</h1>
     <p class="lead">Izdelujemo in montiramo jeklene konstrukcije in cevovode, izvajamo remonte ter kontrolo zvarov. Po tehnični dokumentaciji, v delavnici ali na vaši lokaciji.</p>
     <div class="btn-row"><a class="btn btn-dark" href="{p.link('kontakt')}">Kontaktirajte nas</a>
     <a class="btn btn-line" href="{p.link('storitve')}">Pregled storitev</a></div>
@@ -377,15 +376,10 @@ def home():
 </div></section>
 
 <section class="alt"><div class="wrap cols">
-  <div style="display:grid;gap:18px;align-content:start"><span class="label">Panoge</span><h2>Za koga delamo</h2>
-  <p class="muted" style="max-width:52ch">Industrijski naročniki in izvajalci, ki potrebujejo zanesljivega partnerja za varjenje, montažo in vzdrževanje.</p></div>
+  <div style="display:grid;gap:18px;align-content:start"><span class="label">Naročniki</span><h2>Panoge, v katerih delamo</h2>
+  <p class="muted" style="max-width:52ch">Delamo za proizvodna podjetja in izvajalce industrijskih projektov, ki potrebujejo zanesljivega partnerja za varjenje, montažo in vzdrževanje.</p></div>
   <div style="display:grid;gap:28px"><div class="tags">{tags}</div>
   <ul class="checks"><li>Posamični kosi, manjše serije in serijska proizvodnja</li><li>Izvedba v delavnici ali na lokaciji naročnika</li><li>Projekti v Sloveniji in tujini</li></ul></div>
-</div></section>
-
-<section><div class="wrap">
-  {sec_head("Reference", "Izbrani projekti", None, f'<div><a class="textlink" href="{p.link("projekti")}">Vsi projekti</a></div>')}
-  {proj_list(PROJECTS[:3])}
 </div></section>
 
 <section class="alt"><div class="wrap cols">
@@ -463,7 +457,21 @@ def service_page(slug):
     return p, layout(p, d["h1"], d["lead"], body, "storitve")
 
 
+def redirect_page(key, target):
+    p = Page(key)
+    href = p.link(target)
+    return p, f'''<!DOCTYPE html>
+<html lang="{p.lang}"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url={href}"><link rel="canonical" href="https://arcmetal.si/{path_for(target, p.lang)}/">
+<title>ARC METAL</title></head><body><p><a href="{href}">{u('services')}</a></p></body></html>
+'''
+
+
 def projekti():
+    return redirect_page("projekti", "storitve")
+
+
+def _projekti_old():
     p = Page("projekti")
     body = f'''{page_head(p, [("Projekti", None)], "Projekti", "Izbor del s področja varjenja cevovodov, jeklenih konstrukcij, montaže in vzdrževanja industrijske opreme.")}
 <section><div class="wrap">{proj_list(PROJECTS)}</div></section>
@@ -635,6 +643,8 @@ def main():
         today = datetime.date.today().isoformat()
         urls = []
         for key in PATHS:
+            if key == "projekti":
+                continue
             sl = "https://arcmetal.si/" + (key + "/" if key else "")
             en = "https://arcmetal.si/" + PATHS[key] + "/"
             alt = f'<xhtml:link rel="alternate" hreflang="sl" href="{sl}"/><xhtml:link rel="alternate" hreflang="en" href="{en}"/>'
